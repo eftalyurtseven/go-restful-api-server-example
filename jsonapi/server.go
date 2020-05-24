@@ -163,5 +163,6 @@ func main() {
 	// for /posts/{id} path call deletePost func in DELETE method
 	router.HandleFunc("/posts/{id}", deletePost).Methods("DELETE")
 	log.Fatal(http.ListenAndServe(":8080", router))
+	fmt.Println("Server listen 8080")
 
 }
