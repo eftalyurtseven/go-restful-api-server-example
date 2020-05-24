@@ -1,4 +1,4 @@
-package jsonapi
+package main
 
 import (
 	"encoding/json"
@@ -68,19 +68,19 @@ func getOnePost(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "String to int casting operation failed :(")
 	}
 	// temp variable for not found message
-	isFind := 0
 	// iterate all posts
 	for _, singlePost := range posts {
 		if singlePost.ID == postIDInt {
 			// if list has a request {id} isFind set 1
-			isFind = 1
+			w.WriteHeader(200)
 			// return finded post
 			json.NewEncoder(w).Encode(singlePost)
+			return
 		}
 	}
-	if isFind == 0 {
-		fmt.Fprintf(w, "Post does not found :(")
-	}
+	w.WriteHeader(404)
+	w.Write([]byte(`{"state":false,"message": "Post not found"}`))
+
 }
 
 // update post by ID
@@ -103,22 +103,18 @@ func updatePost(w http.ResponseWriter, r *http.Request) {
 	// req body -> updatedPost variable
 	json.Unmarshal(reqBody, &updatedPost)
 	// temp variable for not found message
-	isFind := 0
 	for i, singlePost := range posts {
 		if singlePost.ID == postIDInt {
-			isFind = 1
 			singlePost.Title = updatedPost.Title
 			singlePost.Description = updatedPost.Description
 			posts = append(posts[:i], singlePost)
 			// return updated post
 			json.NewEncoder(w).Encode(singlePost)
+			return
 		}
 	}
-
-	if isFind == 0 {
-		fmt.Fprintf(w, postID+" not found in posts!")
-	}
-
+	w.WriteHeader(404)
+	w.Write([]byte(`{"state":false,"message": "Post not found"}`))
 }
 
 func deletePost(w http.ResponseWriter, r *http.Request) {
@@ -131,19 +127,18 @@ func deletePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprintf(w, "String to int casting operation failed :(")
 	}
-	isFind := 0
 
 	for i, singlePost := range posts {
 		if singlePost.ID == postIDInt {
-			isFind = 1
 			// delete finded index :index , index+1:
 			posts = append(posts[:i], posts[i+1:]...)
 			fmt.Fprintf(w, "ID: %v post deleted!", postID)
 		}
 	}
-	if isFind == 0 {
-		fmt.Fprintf(w, postID+" not found in posts!")
-	}
+
+	w.WriteHeader(404)
+	w.Write([]byte(`{"state":false,"message": "Post not found"}`))
+
 }
 
 func main() {
