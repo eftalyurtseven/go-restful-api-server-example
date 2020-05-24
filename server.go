@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
+	"net/http" // string convert processes
+	"strconv"
 
-	"github.com/gorilla/mux" // For router?
+	"github.com/gorilla/mux" // For router
 )
 
 func homeRoute(w http.ResponseWriter, r *http.Request) {
@@ -30,22 +31,51 @@ var posts = allPosts{
 	},
 }
 
+// create a post and append posts variable
 func createPost(w http.ResponseWriter, r *http.Request) {
 	var newPost post
-	reqBody, err := ioutil.ReadAll(r.Body) // get request body and error from r.Body
+	// get request body and error from r.Body
+	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Fprintf(w, "Please send post title and description!") // If has a error show last user.
+		// If has a error show last user.
+		fmt.Fprintf(w, "Please send post title and description!")
 	}
-	json.Unmarshal(reqBody, &newPost) // json unmarshall parses the json-encoded data and stores result in value point to by &newPost
-	posts = append(posts, newPost)    // append to posts
+	// json unmarshall parses the json-encoded data and stores result in value point to by &newPost
+	json.Unmarshal(reqBody, &newPost)
+	// append to posts
+	posts = append(posts, newPost)
 	w.WriteHeader(http.StatusCreated)
 
 	json.NewEncoder(w).Encode(newPost)
 }
 
+// get all posts from posts variable
 func getAllPosts(w http.ResponseWriter, r *http.Request) {
 	// json encode and send header application/json ?
 	json.NewEncoder(w).Encode(posts)
+}
+
+// get single post
+func getOnePost(w http.ResponseWriter, r *http.Request) {
+	// get id
+	postID := mux.Vars(r)["id"]
+	// postID var is string but ID integer my post struct
+	// convert str to int
+	postIDInt, err := strconv.Atoi(postID)
+	if err != nil {
+		fmt.Fprintf(w, "String to int casting operation failed :(")
+	}
+	isFind := 0
+	// iterate all posts
+	for _, singlePost := range posts {
+		if singlePost.ID == postIDInt {
+			isFind = 1
+			json.NewEncoder(w).Encode(singlePost)
+		}
+	}
+	if isFind == 0 {
+		fmt.Fprintf(w, "Post does not found :(")
+	}
 }
 
 func main() {
@@ -58,7 +88,8 @@ func main() {
 	router.HandleFunc("/posts", createPost).Methods("POST")
 	// for posts/ path call getAllPosts func in get method
 	router.HandleFunc("/posts", getAllPosts).Methods("GET")
-
+	// for get a single post call getOnePost func in get method
+	router.HandleFunc("/posts/{id}", getOnePost).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8081", router))
 
 }
