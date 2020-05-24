@@ -1,4 +1,4 @@
-package main
+package jsonapi
 
 import (
 	"encoding/json"
@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http" // string convert processes
 	"strconv"
-	"time"
 
 	"github.com/gorilla/mux" // For router
 )
@@ -34,8 +33,7 @@ var posts = allPosts{
 
 // create a post and append posts variable
 func createPost(w http.ResponseWriter, r *http.Request) {
-	t := time.Now()
-	fmt.Println(t.String() + " - create post called!")
+	log.Println("create post called!")
 	var newPost post
 	// get request body and error from r.Body
 	reqBody, err := ioutil.ReadAll(r.Body)
@@ -53,16 +51,14 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 
 // get all posts from posts variable
 func getAllPosts(w http.ResponseWriter, r *http.Request) {
-	t := time.Now()
-	fmt.Println(t.String() + " - get all posts called!")
+	log.Println("get all posts called!")
 	// json encode and send header application/json ?
 	json.NewEncoder(w).Encode(posts)
 }
 
 // get single post
 func getOnePost(w http.ResponseWriter, r *http.Request) {
-	t := time.Now()
-	fmt.Println(t.String() + " - get one post called!")
+	log.Println("get one post called!")
 	// get id
 	postID := mux.Vars(r)["id"]
 	// postID var is string but ID integer my post struct
@@ -87,12 +83,11 @@ func getOnePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// update post from ID
+// update post by ID
 func updatePost(w http.ResponseWriter, r *http.Request) {
 	// get postID from request
 	postID := mux.Vars(r)["id"]
-	t := time.Now()
-	fmt.Println(t.String() + " - update post called by id: " + postID)
+	log.Println("update post called by id: " + postID)
 	// postID var is string but ID integer my post struct
 	// convert str to int
 	postIDInt, err := strconv.Atoi(postID)
@@ -129,8 +124,7 @@ func updatePost(w http.ResponseWriter, r *http.Request) {
 func deletePost(w http.ResponseWriter, r *http.Request) {
 	// get postID from request
 	postID := mux.Vars(r)["id"]
-	t := time.Now()
-	fmt.Println(t.String() + " - delete post called by id: " + postID)
+	log.Println("delete post called by id: " + postID)
 	// postID var is string but ID integer my post struct
 	// convert str to int
 	postIDInt, err := strconv.Atoi(postID)
